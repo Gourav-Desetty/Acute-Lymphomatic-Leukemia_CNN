@@ -1,0 +1,12 @@
+venv/
+p_venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.env
+.venv
+*.egg-info/
+
+PKG_C_NMC/
