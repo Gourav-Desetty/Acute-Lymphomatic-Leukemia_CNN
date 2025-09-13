@@ -9,4 +9,4 @@ __pycache__/
 .venv
 *.egg-info/
 
-PKG_C_NMC/
+PKG_C_NMC
