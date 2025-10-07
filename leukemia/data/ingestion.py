@@ -89,7 +89,7 @@ class DataIngestion:
             train_paths, train_labels, val_paths, val_labels = self.split_data(image_paths=images_paths,
                                                                                 labels=labels,
                                                                                 subject_ids=subject_ids)
-            
+
             data_ingestion_artifact = DataIngestionArtifact(train_paths=train_paths,
                                                             train_labels=train_labels,
                                                             val_paths=val_paths,
