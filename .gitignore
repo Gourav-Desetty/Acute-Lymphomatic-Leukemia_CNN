@@ -11,6 +11,3 @@ __pycache__/
 
 PKG_C_NMC
 uv.lock
-
-*.pth
-*.pt
