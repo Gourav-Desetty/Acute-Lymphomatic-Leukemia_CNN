@@ -10,3 +10,7 @@ __pycache__/
 *.egg-info/
 
 PKG_C_NMC
+uv.lock
+
+*.pth
+*.pt
