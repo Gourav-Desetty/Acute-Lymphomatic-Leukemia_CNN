@@ -9,3 +9,10 @@ torchinfo
 tqdm
 ipykernel
 requests
+
+langchain
+langgraph
+langchain-community
+sentence-transformers
+chromadb
+beautifulsoup4
