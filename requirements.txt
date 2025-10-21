@@ -16,3 +16,7 @@ langchain-community
 sentence-transformers
 chromadb
 beautifulsoup4
+wikipedia
+pypdf
+pymupdf
+langchain-groq
