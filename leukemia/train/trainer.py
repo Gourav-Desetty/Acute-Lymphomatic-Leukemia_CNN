@@ -1,7 +1,8 @@
 import os, sys
 import numpy as np
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Union
 import torch
+from torch import device as torch_device
 import torch.nn as nn
 import torch.nn.functional as F
 from sklearn.metrics import roc_auc_score
@@ -24,7 +25,7 @@ class EarlyStopping:
             self.best_loss = np.inf
             self.early_stop = False
         except Exception as e:
-            raise CustomException(e, sys)
+            raise CustomException(str(e), e)
 
     def __call__(self, val_loss, model):
         try:
@@ -40,22 +41,24 @@ class EarlyStopping:
                     if self.restore_best_weights and self.best_model is not None:
                         model.load_state_dict(self.best_model)
         except Exception as e:
-            raise CustomException(e, sys)
+            raise CustomException(str(e), e)
 
 
 
 class Train:
-    def __init__(self, data_validation:DataValidation) -> None:
+    def __init__(self, data_validation:DataValidation, model: nn.Module, device: Union[str, torch_device]=DEVICE) -> None:
         try:
             self.data_validation = data_validation
+            self.model = model
+            self.device = device
         except Exception as e:
-            raise CustomException(e, sys)
+            raise CustomException(str(e), e)
 
     def train_step(self, model:nn.Module, 
                     loss_fn:nn.Module,
                     optimizer:torch.optim.Optimizer, 
                     dataloader:torch.utils.data.DataLoader, 
-                    device=DEVICE) -> Tuple[float, float, float, float, float]:
+                    device: Union[str, torch_device]=DEVICE) -> Tuple[float, float, float, float, float]:
         try:
             model.train()
             train_loss = 0.0
@@ -91,15 +94,41 @@ class Train:
             all_probs_positive = [prob[1] for prob in all_probs]
             train_roc_curve = roc_auc_score(all_labels, all_probs_positive)
 
-            return train_loss, train_f1, train_roc_curve, train_acc, train_recall
+            return float(train_loss), float(train_f1), float(train_roc_curve), float(train_acc), float(train_recall)
         except Exception as e:
-            raise CustomException(e, sys)
+            raise CustomException(str(e), e)
 
+    def _setup_optimizer(self) -> torch.optim.Optimizer:
+        return torch.optim.AdamW(self.model.parameters(), lr=0.001, weight_decay=1e-3)
+
+    def _setup_scheduler(self, optimizer: torch.optim.Optimizer) -> torch.optim.lr_scheduler.CosineAnnealingWarmRestarts:
+        return torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
+                optimizer, T_0=10, T_mult=2, eta_min=1e-6
+            )
+
+    def _validate_epoch(self, 
+                        dataloader: torch.utils.data.DataLoader,
+                        loss_fn: nn.Module) -> Dict[str, float]:
+        val_loss, val_f1, val_roc_auc, val_acc, val_recall = self.data_validation.val_step(
+            model=self.model,
+            loss_fn=loss_fn,
+            dataloader=dataloader
+        )
+        # Convert all metrics to float and return as dictionary
+        return {
+            'val_loss': float(val_loss),
+            'val_f1': float(val_f1),
+            'val_roc_auc': float(val_roc_auc),
+            'val_acc': float(val_acc),
+            'val_recall': float(val_recall)
+        }
 
     def train_model(self, model:nn.Module, 
                 train_dataloader:torch.utils.data.DataLoader,
                 val_dataloader:torch.utils.data.DataLoader,
-                epochs=5) -> Dict[str, list]:
+                epochs: int=5,
+                patience: int = 5,
+                min_delta: float=0.001) -> Dict[str, list]:
 
         try:
             results = {
@@ -115,17 +144,15 @@ class Train:
                 "val_recall": []
             }
 
-            early_stopping = EarlyStopping(patience=5, min_delta=0.001)
+            early_stopping = EarlyStopping(patience=patience, min_delta=min_delta)
 
             counts = torch.tensor([3389, 7272], dtype=torch.float32)
             total = counts.sum()
             weights = total / (len(counts) * counts)
             loss_fn = nn.CrossEntropyLoss(weight=weights.to(device=DEVICE))
 
-            optimizer = torch.optim.AdamW(model.parameters(), lr=0.001, weight_decay=1e-3)
-            scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
-                optimizer, T_0=10, T_mult=2, eta_min=1e-6
-            )
+            optimizer = self._setup_optimizer()
+            scheduler = self._setup_scheduler(optimizer)
             
 
             for epoch in tqdm(range(epochs)):
@@ -135,9 +162,13 @@ class Train:
                                                     optimizer=optimizer,
                                                     dataloader=train_dataloader)
 
-                val_loss, val_f1, val_roc_auc, val_acc, val_recall = self.data_validation.val_step(model=model,
-                                            loss_fn=loss_fn,
-                                            dataloader=val_dataloader)
+                # Get validation metrics using _validate_epoch
+                val_metrics = self._validate_epoch(dataloader=val_dataloader, loss_fn=loss_fn)
+                val_loss = val_metrics['val_loss']
+                val_f1 = val_metrics['val_f1']
+                val_roc_auc = val_metrics['val_roc_auc']
+                val_acc = val_metrics['val_acc']
+                val_recall = val_metrics['val_recall']
 
                 scheduler.step()
 
@@ -172,4 +203,4 @@ class Train:
 
             return results
         except Exception as e:
-            raise CustomException(e, sys)
+            raise CustomException(str(e), e)

@@ -54,7 +54,7 @@ class DataIngestion:
             return images_paths, labels, subject_ids
 
         except Exception as e:
-            raise CustomException(e, sys)
+            raise CustomException(str(e), e)
     
     def split_data(self, image_paths: List[str], labels: List[int], subject_ids: List[str], test_size=0.2):
         try:
@@ -80,7 +80,7 @@ class DataIngestion:
             return train_paths, train_labels, val_paths, val_labels
 
         except Exception as e:
-            raise CustomException(e, sys)
+            raise CustomException(str(e), e)
 
     def initiate_data_ingestion(self) -> DataIngestionArtifact:
         try:
@@ -97,4 +97,4 @@ class DataIngestion:
 
             return data_ingestion_artifact
         except Exception as e:
-            raise CustomException(e, sys)
+            raise CustomException(str(e), e)

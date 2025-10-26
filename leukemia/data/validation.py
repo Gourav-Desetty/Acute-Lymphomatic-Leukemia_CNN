@@ -17,7 +17,7 @@ class DataValidation:
             acc = (correct / len(y_pred)) * 100
             return acc
         except Exception as e:
-            raise CustomException(e, sys)
+            raise CustomException(str(e), e)
 
     def val_step(self, model:nn.Module,
                 loss_fn:nn.Module,
@@ -55,4 +55,4 @@ class DataValidation:
 
             return val_loss, val_f1, val_roc_curve, val_acc, val_recall
         except Exception as e:
-            raise CustomException(e, sys)
+            raise CustomException(str(e), e)

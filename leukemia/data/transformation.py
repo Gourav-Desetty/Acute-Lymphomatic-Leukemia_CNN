@@ -16,13 +16,13 @@ class CustomDataset(Dataset):
             self.labels = labels
             self.transform = transform
         except Exception as e:
-            raise CustomException(e, sys)
+            raise CustomException(str(e), e)
 
     def __len__(self):
         try:
             return len(self.image_paths)
         except Exception as e:
-            raise CustomException(e, sys)
+            raise CustomException(str(e), e)
 
     def __getitem__(self, index):
         try:
@@ -36,7 +36,7 @@ class CustomDataset(Dataset):
 
             return img, label
         except Exception as e:
-            raise CustomException(e, sys)
+            raise CustomException(str(e), e)
 
 
 class DataTransformation:
@@ -44,7 +44,7 @@ class DataTransformation:
         try:
             self.data_ingestion_artifact = data_ingestion_artifact
         except Exception as e:
-            raise CustomException(e, sys)
+            raise CustomException(str(e), e)
 
     def get_transforms(self) -> Tuple[transforms.Compose, transforms.Compose]:
         try:
@@ -67,7 +67,7 @@ class DataTransformation:
 
             return train_transform, val_transform
         except Exception as e:
-            raise CustomException(e, sys)
+            raise CustomException(str(e), e)
 
     def initiate_data_transformation(self) -> DataTransformationArtifact:
         try:
@@ -92,4 +92,4 @@ class DataTransformation:
             return data_transformation_artifact
 
         except Exception as e:
-            raise CustomException(e, sys)
+            raise CustomException(str(e), e)
