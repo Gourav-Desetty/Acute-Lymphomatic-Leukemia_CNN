@@ -65,7 +65,7 @@ class DataIngestion:
                                                             test_size=test_size, 
                                                             random_state=42, 
                                                             stratify= [s.split('_')[0] for s in unique_subjects])
-            logging.info("performed train test split")
+
             train_paths, train_labels = [], []
             val_paths, val_labels = [], []
 
@@ -76,7 +76,7 @@ class DataIngestion:
                 else:
                     val_paths.append(path)
                     val_labels.append(label)
-
+            logging.info("performed train test split")
             return train_paths, train_labels, val_paths, val_labels
 
         except Exception as e:
