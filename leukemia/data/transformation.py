@@ -15,12 +15,14 @@ class CustomDataset(Dataset):
             self.image_paths = image_paths
             self.labels = labels
             self.transform = transform
+            logging.info(f"Dataset initialized with {len(image_paths)} images.")
         except Exception as e:
             raise CustomException(str(e), e)
 
     def __len__(self):
         try:
             return len(self.image_paths)
+            logging.info(f"Dataset length requested: {length}")
         except Exception as e:
             raise CustomException(str(e), e)
 
@@ -28,11 +30,13 @@ class CustomDataset(Dataset):
         try:
             img_path = self.image_paths[index]
             label = self.labels[index]
+            logging.info(f"Loading image: {img_path} (index {index}) with label {label}")
 
             img = Image.open(img_path).convert("RGB")
 
             if self.transform:
                 img = self.transform(img)
+                logging.info(f"Applied transforms to image at index {index}")
 
             return img, label
         except Exception as e:
@@ -71,6 +75,7 @@ class DataTransformation:
 
     def initiate_data_transformation(self) -> DataTransformationArtifact:
         try:
+            logging.info("Initialising data transformation")
             train_transform, val_transform = self.get_transforms()
 
             train_dataset = CustomDataset(image_paths=self.data_ingestion_artifact.train_paths,
@@ -88,7 +93,7 @@ class DataTransformation:
 
             data_transformation_artifact = DataTransformationArtifact(train_dataloader=train_dataloader,
                                                                         val_dataloader=val_dataloader)
-
+            logging.info("Data Transformation completed")
             return data_transformation_artifact
 
         except Exception as e:
