@@ -1,8 +1,7 @@
 import os, sys
 import numpy as np
-from typing import List, Tuple, Dict, Union
+from typing import List, Tuple, Dict
 import torch
-from torch import device as torch_device
 import torch.nn as nn
 import torch.nn.functional as F
 from sklearn.metrics import roc_auc_score
@@ -46,7 +45,7 @@ class EarlyStopping:
 
 
 class Train:
-    def __init__(self, data_validation:DataValidation, model: nn.Module, device: Union[str, torch_device]=DEVICE) -> None:
+    def __init__(self, data_validation:DataValidation, model: nn.Module, device: str=DEVICE) -> None:
         try:
             self.data_validation = data_validation
             self.model = model
@@ -58,7 +57,7 @@ class Train:
                     loss_fn:nn.Module,
                     optimizer:torch.optim.Optimizer, 
                     dataloader:torch.utils.data.DataLoader, 
-                    device: Union[str, torch_device]=DEVICE) -> Tuple[float, float, float, float, float]:
+                    device=DEVICE) -> Tuple[float, float, float, float, float]:
         try:
             model.train()
             train_loss = 0.0
@@ -101,27 +100,18 @@ class Train:
     def _setup_optimizer(self) -> torch.optim.Optimizer:
         return torch.optim.AdamW(self.model.parameters(), lr=0.001, weight_decay=1e-3)
 
-    def _setup_scheduler(self, optimizer: torch.optim.Optimizer) -> torch.optim.lr_scheduler.CosineAnnealingWarmRestarts:
+    def _setup_scheduler(self, optimizer):
         return torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
                 optimizer, T_0=10, T_mult=2, eta_min=1e-6
             )
 
-    def _validate_epoch(self, 
-                        dataloader: torch.utils.data.DataLoader,
-                        loss_fn: nn.Module) -> Dict[str, float]:
-        val_loss, val_f1, val_roc_auc, val_acc, val_recall = self.data_validation.val_step(
-            model=self.model,
+    def _validate_epoch(self, dataloader, loss_fn) -> Dict[str, float]:
+        metrics = self.data_validation.val_step(
+            model = self.model,
             loss_fn=loss_fn,
             dataloader=dataloader
         )
-        # Convert all metrics to float and return as dictionary
-        return {
-            'val_loss': float(val_loss),
-            'val_f1': float(val_f1),
-            'val_roc_auc': float(val_roc_auc),
-            'val_acc': float(val_acc),
-            'val_recall': float(val_recall)
-        }
+        return metrics
 
     def train_model(self, model:nn.Module, 
                 train_dataloader:torch.utils.data.DataLoader,
@@ -162,13 +152,9 @@ class Train:
                                                     optimizer=optimizer,
                                                     dataloader=train_dataloader)
 
-                # Get validation metrics using _validate_epoch
-                val_metrics = self._validate_epoch(dataloader=val_dataloader, loss_fn=loss_fn)
-                val_loss = val_metrics['val_loss']
-                val_f1 = val_metrics['val_f1']
-                val_roc_auc = val_metrics['val_roc_auc']
-                val_acc = val_metrics['val_acc']
-                val_recall = val_metrics['val_recall']
+                val_loss, val_f1, val_roc_auc, val_acc, val_recall = self.data_validation.val_step(model=model,
+                                            loss_fn=loss_fn,
+                                            dataloader=val_dataloader)
 
                 scheduler.step()
 
