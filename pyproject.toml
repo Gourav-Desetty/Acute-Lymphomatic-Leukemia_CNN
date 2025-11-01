@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "leukemia-project"
 version = "0.1.0"
@@ -27,3 +31,8 @@ dependencies = [
     "tqdm>=4.67.1",
     "wikipedia>=1.4.0",
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["leukemia*"]
+exclude = ["data*", "Models*", "notebooks*", "PKG_C_NMC*"]
