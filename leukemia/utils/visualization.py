@@ -52,21 +52,3 @@ def plot_graph(results: Dict[str, List[float]]):
 
     plt.tight_layout()
     plt.show()
-
-
-def pred_plot_image(model:torch.nn.Module, image_path: str, class_name:List[str], transform = None):
-    # target_image = Image.open(image_path).type(torch.float32) / 255
-    target_image = Image.open(image_path).convert('RGB')
-
-    if transform:
-        target_image_transformed = transform(target_image)
-
-    model.eval()
-    with torch.inference_mode():
-        target_image_pred = model(target_image_transformed.unsqueeze(dim=0))
-    target_image_pred_prob = torch.softmax(target_image_pred, dim=1)
-    target_image_pred_label = torch.argmax(target_image_pred_prob, dim=1)
-
-    plt.title(f"pred: {class_name[target_image_pred_label]} | prob: {target_image_pred_prob.max():.2f}")
-    plt.imshow(target_image_transformed.permute(1, 2, 0))
-    plt.axis(False)
