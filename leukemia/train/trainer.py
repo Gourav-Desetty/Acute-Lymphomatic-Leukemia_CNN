@@ -8,8 +8,8 @@ from sklearn.metrics import roc_auc_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
 from tqdm import tqdm
-from constant.training_pipeline import DEVICE
-from data.validation import DataValidation
+from leukemia.constant.training_pipeline import DEVICE
+from leukemia.data.validation import DataValidation
 from leukemia.logging.logger import logging
 from leukemia.exception.exception import CustomException
 
@@ -45,11 +45,10 @@ class EarlyStopping:
 
 
 class Train:
-    def __init__(self, data_validation:DataValidation, model: nn.Module, device: str=DEVICE) -> None:
+    def __init__(self, data_validation:DataValidation, model: nn.Module) -> None:
         try:
             self.data_validation = data_validation
             self.model = model
-            self.device = device
         except Exception as e:
             raise CustomException(str(e), e)
 
@@ -101,17 +100,16 @@ class Train:
         return torch.optim.AdamW(self.model.parameters(), lr=0.001, weight_decay=1e-3)
 
     def _setup_scheduler(self, optimizer):
-        return torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
-                optimizer, T_0=10, T_mult=2, eta_min=1e-6
-            )
-
-    def _validate_epoch(self, dataloader, loss_fn) -> Dict[str, float]:
-        metrics = self.data_validation.val_step(
-            model = self.model,
-            loss_fn=loss_fn,
-            dataloader=dataloader
+        return torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            mode='min',           # Monitor minimum validation loss
+            factor=0.5,          # Reduce LR by half
+            patience=2,          # Wait 2 epochs before reducing
+            # verbose=True,        # Print LR changes
+            min_lr=1e-7,        # Don't go below this
+            threshold=0.01       # Minimum change to count as improvement
         )
-        return metrics
+
 
     def train_model(self, model:nn.Module, 
                 train_dataloader:torch.utils.data.DataLoader,
@@ -156,7 +154,7 @@ class Train:
                                             loss_fn=loss_fn,
                                             dataloader=val_dataloader)
 
-                scheduler.step()
+                scheduler.step(val_loss)
 
                 print(f"\nEpoch {epoch+1:03d}")
                 print(f"{'-'*70}")
