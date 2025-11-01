@@ -11,6 +11,10 @@ class DataIngestionArtifact:
 
 @dataclass
 class DataTransformationArtifact:
-    train_dataloader:DataLoader
-    val_dataloader:DataLoader
+    train_dataloader: DataLoader
+    val_dataloader: DataLoader
 
+@dataclass
+class Predict_image:
+    prediction: str
+    confidence: float
