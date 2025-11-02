@@ -1,13 +1,13 @@
 import os, sys
-import numpy as np
-from typing import List, Tuple, Dict
 import torch
+import numpy as np
 import torch.nn as nn
+from tqdm import tqdm
 import torch.nn.functional as F
+from typing import List, Tuple, Dict
+from sklearn.metrics import f1_score
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import recall_score
-from sklearn.metrics import f1_score
-from tqdm import tqdm
 from leukemia.constant.training_pipeline import DEVICE
 from leukemia.data.validation import DataValidation
 from leukemia.logging.logger import logging
@@ -102,12 +102,11 @@ class Train:
     def _setup_scheduler(self, optimizer):
         return torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer,
-            mode='min',           # Monitor minimum validation loss
-            factor=0.5,          # Reduce LR by half
-            patience=2,          # Wait 2 epochs before reducing
-            # verbose=True,        # Print LR changes
-            min_lr=1e-7,        # Don't go below this
-            threshold=0.01       # Minimum change to count as improvement
+            mode='min',
+            factor=0.5,      
+            patience=2,
+            min_lr=1e-7,
+            threshold=0.01
         )
 
 
