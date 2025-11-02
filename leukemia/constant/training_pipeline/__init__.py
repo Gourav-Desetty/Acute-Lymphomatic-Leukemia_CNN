@@ -2,7 +2,8 @@ import os
 import sys
 import pandas as pd
 import numpy as np
-import torch
+import torch, random
+from pathlib import Path
 
 TRAINING_DATA_DIR  = "NMC_training_data"
 TEST_DATA_PRELIM_DIR  = "test_prelim"
@@ -15,3 +16,5 @@ DATA INGESTION REALTED CONSTANTS
 
 DATA_INGESTION_DATASET_NAME = "PKG_C_NMC"
 DATA_INGESTION_TRAIN_TEST_SPLIT_RATIO:float = 0.2
+
+IMAGE_PATH =  random.choice(list(Path("PKG_C_NMC/test_final").glob("*/*.bmp")))
