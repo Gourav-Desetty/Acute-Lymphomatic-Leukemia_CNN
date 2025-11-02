@@ -1,6 +1,6 @@
 from langchain_groq import ChatGroq
-from prompts import templates
-from loaders.document_loader import MedicalDocumentLoader
+from leukemia.nlp.prompts import templates
+from leukemia.nlp.loaders.document_loader import MedicalDocumentLoader
 
 class MedicalReportChain:
     def __init__(self, model_name: str = "qwen/qwen3-32b", temperature: float = 0.1):
