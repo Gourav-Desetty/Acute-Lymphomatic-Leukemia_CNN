@@ -1,7 +1,10 @@
+from pathlib import Path
 import torch 
 from torch import nn
 from torchvision import models
 from leukemia.logging.logger import logging 
+from leukemia.constant.training_pipeline import DEVICE
+from leukemia.constant.training_pipeline import MODEL_PATH
 
 class LeukemiaCNN(nn.Module):
     def __init__(self, num_classes=2, pretrained=True) :
@@ -32,14 +35,19 @@ class LeukemiaCNN(nn.Module):
     def forward(self, X):
         return self.model(X)
 
+def save_model(model, model_name="leukemia_model_efficientnet_b0_01.pth", model_dir="../Models"):
+    model_path = Path(model_dir)
+    model_path.mkdir(exist_ok=True, parents=False)
+    model_save_path = model_path / model_name
+    torch.save(model.state_dict(), model_save_path)
+    return model_save_path
 
-def load_model(path: None, device:str ="cpu") -> nn.Module:
+def load_model(path: str = MODEL_PATH) -> nn.Module:
     model = LeukemiaCNN(num_classes=2, pretrained=False)
     if path:
-        model.load_state_dict(torch.load(path, map_location=device))
+        model.load_state_dict(torch.load(path, map_location=DEVICE))
     logging.info("Loaded weights  from {path}")
-    model.to(device)
+    model.to(DEVICE)
     model.eval()
 
     return model
-
