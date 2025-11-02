@@ -1,5 +1,5 @@
-from chains.report_chain import MedicalReportChain
-from prompts.templates import template
+from leukemia.nlp.chains.report_chain import MedicalReportChain
+from leukemia.nlp.prompts.templates import template
 
 class LeukemiaReportGenerator:
     def __init__(self) -> None:

@@ -15,10 +15,15 @@ class MedicalDocumentLoader:
     def load_web_documents(self, urls: List[str]) -> str:
         loader = WebBaseLoader(urls)
         docs = loader.load()
+
+        with open("docs_cache.txt", "w", encoding="utf-8") as f:
+            for doc in docs:
+                text = doc.page_content.replace(". ", ".\n")
+                f.write(text + "\n\n")
         return "\n\n".join(doc.page_content for doc in docs)
     
     def load_wiki_content(self, query: str) -> str:
-        return self.wiki_tool.run({'query': "Acute Lymphomatic Leukemia"})
+        return self.wiki_tool.run({'query':query})
     
     def combined_context(self, urls: List[str], wiki_query: Optional[str] = None) -> str:
         web_content = self.load_web_documents(urls=urls)
