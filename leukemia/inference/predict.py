@@ -6,6 +6,7 @@ from leukemia.logging.logger import logging
 from torchvision import transforms
 from leukemia.nlp.generator.report_generator import LeukemiaReportGenerator
 from leukemia.entity.artifact_entity import Predict_image
+from leukemia.constant.training_pipeline import DEVICE, IMAGE_PATH
 
 class Predictor:
     def __init__(self, model, transform=None):
@@ -22,19 +23,24 @@ class Predictor:
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
 
-    def predict_image(self, model:torch.nn.Module, image_path: str, class_name:List[str]) -> Predict_image:
+    def predict_image(self, model: torch.nn.Module, image_path: str, class_name: List[str]) -> Predict_image:
         try:
             target_image = Image.open(image_path).convert('RGB')
             target_image_transformed = self.transform(target_image)
 
+            model.eval()
             with torch.inference_mode():
-                target_image_pred = self.model(target_image_transformed.unsqueeze(dim=0))
+                target_image_pred = model(target_image_transformed.unsqueeze(dim=0).to(DEVICE))
+            
             target_image_pred_prob = torch.softmax(target_image_pred, dim=1)
             target_image_pred_label = torch.argmax(target_image_pred_prob, dim=1)
 
             pred_percentage = target_image_pred_prob.max().item() * 100
 
-            predict_image = Predict_image(prediction = class_name[target_image_pred_label], confidence = pred_percentage)
+            predict_image = Predict_image(
+                prediction=class_name[target_image_pred_label.item()],
+                confidence=pred_percentage
+            )
 
             return predict_image
         except Exception as e:
