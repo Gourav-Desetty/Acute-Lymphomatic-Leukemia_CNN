@@ -12,14 +12,6 @@ from leukemia.entity.artifact_entity import DataTransformationArtifact
 # from leukemia.entity.artifact_entity import DataValidationArtifact
 
 class DataValidation:
-    def __init__(self, data_transformation_artifact=DataTransformationArtifact):
-        try:
-            self.data_transformation_artifact = data_transformation_artifact
-            self.train_dataloader = data_transformation_artifact.train_dataloader
-            self.val_dataloader = data_transformation_artifact.val_dataloader
-            logging.info("DataValidation initialized")
-        except Exception as e:
-            raise CustomException(str(e), e)
     @staticmethod
     def accuracy_fn(y_true, y_pred):
         try:
