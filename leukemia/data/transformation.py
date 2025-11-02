@@ -30,13 +30,11 @@ class CustomDataset(Dataset):
         try:
             img_path = self.image_paths[index]
             label = self.labels[index]
-            logging.info(f"Loading image: {img_path} (index {index}) with label {label}")
 
             img = Image.open(img_path).convert("RGB")
 
             if self.transform:
                 img = self.transform(img)
-                logging.info(f"Applied transforms to image at index {index}")
 
             return img, label
         except Exception as e:
